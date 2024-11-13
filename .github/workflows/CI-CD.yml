@@ -1,37 +1,48 @@
-name: CI-CD
+name: CI/CD Workflow
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: npx yarn
-    - name: Build
-      run: npx yarn build
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        name: assets
-        path: dist
+        node-version: 14
+
+    - name: Install dependencies
+      run: npx ci
+
+    - name: Run Linter
+      run: npx run lint
+
+    - name: Run Tests
+      run: npx run test
 
   deploy:
     needs: build
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-
-    # Deploy to the github-pages environment
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    # Specify runner + deployment step
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Install dependencies
+      run: npx ci
+
+    - name: Deploy to GitHub Pages
+      run: npx run deploy
+
